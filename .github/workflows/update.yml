@@ -20,15 +20,9 @@ jobs:
           python-version: "3.12"
 
       - name: Build data.json
-        env:
-          # Edit these, or set them as repository Variables (Settings → Secrets
-          # and variables → Actions → Variables) and reference ${{ vars.LAT }}.
-          LAT: "59.8586"
-          LON: "17.6389"
-          LOCATION: "Uppsala"
-          UNITS: "celsius"        # or "fahrenheit"
-          NORMAL_FROM: "1961"
-          NORMAL_TO: "1990"
+        # Config (location, units, normal window) lives at the top of
+        # build_data.py — that's the single source of truth. Override per-run
+        # locally with env vars if needed, e.g. LAT=51.5 python3 build_data.py.
         run: python build_data.py
 
       - name: Commit if changed
