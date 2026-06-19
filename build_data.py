@@ -286,7 +286,7 @@ def render_svg(clim, cur, year, W=560, H=440, base_fs=16):
         last = max(cur.keys())
         cx, cy = X(last), Y(cur[last])
         parts.append(f'<circle cx="{cx:.1f}" cy="{cy:.1f}" r="4.5" fill="#000"/>')
-        lbl = f"{cur[last]:.0f}{UNIT_SYMBOL}"
+        lbl = f"{cur[last]:.1f}{UNIT_SYMBOL}"
         anchor = "end" if cx > W * 0.75 else "start"
         dx = -8 if anchor == "end" else 8
         parts.append(
