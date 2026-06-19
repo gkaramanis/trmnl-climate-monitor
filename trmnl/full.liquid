@@ -1,0 +1,36 @@
+<div class="view view--full">
+  <div class="layout layout--col gap--medium">
+
+    <div class="grid grid--cols-3">
+      <div class="item">
+        <div class="meta"></div>
+        <div class="content">
+          <span class="label label--small">Today</span>
+          <span class="value value--xlarge value--tnums">{{ current_temp }}{{ units }}</span>
+        </div>
+      </div>
+      <div class="item">
+        <div class="meta"></div>
+        <div class="content">
+          <span class="label label--small">{{ normal_window }} normal</span>
+          <span class="value value--large value--tnums">{{ normal_temp }}{{ units }}</span>
+        </div>
+      </div>
+      <div class="item">
+        <div class="meta"></div>
+        <div class="content">
+          <span class="label label--small">Anomaly</span>
+          <span class="value value--large value--tnums">{{ anomaly_str }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="w-full">{{ svg_full }}</div>
+
+  </div>
+
+  <div class="title_bar">
+    <span class="title">Climate Monitor · {{ location }}</span>
+    <span class="instance">{{ year }} vs {{ normal_window }}</span>
+  </div>
+</div>

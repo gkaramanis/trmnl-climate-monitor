@@ -1,0 +1,19 @@
+<div class="view view--half_vertical">
+  <div class="layout layout--col gap--small">
+
+    <div class="item">
+      <div class="content">
+        <span class="label label--small">Today / normal</span>
+        <span class="value value--large value--tnums">{{ current_temp }}{{ units }} · {{ anomaly_str }}</span>
+      </div>
+    </div>
+
+    <div class="w-full">{{ svg_compact }}</div>
+
+  </div>
+
+  <div class="title_bar">
+    <span class="title">Climate · {{ location }}</span>
+    <span class="instance">{{ year }}</span>
+  </div>
+</div>
