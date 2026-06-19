@@ -249,11 +249,8 @@ def render_svg(clim, cur, year, compact=False):
     parts.append(f'<path d="{line_path(cur, keys=cur.keys())}" fill="none" '
                  f'stroke="#000" stroke-width="2.6" stroke-linejoin="round"/>')
 
-    # month ticks
+    # month labels (no vertical gridlines)
     for m, start in enumerate(MONTH_STARTS):
-        x = X(start)
-        parts.append(f'<line x1="{x:.1f}" y1="{mt}" x2="{x:.1f}" y2="{H-mb}" '
-                     f'stroke="#efefef" stroke-width="1"/>')
         parts.append(f'<text x="{X(start)+pw/24:.1f}" y="{H-6}" text-anchor="middle" '
                      f'font-size="{fs}" fill="#555">{MONTHS[m]}</text>')
 

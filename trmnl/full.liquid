@@ -1,32 +1,25 @@
 <div class="view view--full">
-  <div class="layout layout--col gap--medium">
+  <div class="layout">
+    <div class="flex gap--large" style="align-items:center; height:100%;">
 
-    <div class="grid grid--cols-3">
-      <div class="item">
-        <div class="meta"></div>
-        <div class="content">
-          <span class="label label--small">Today</span>
-          <span class="value value--xlarge value--tnums">{{ current_temp }}{{ units }}</span>
+      <div style="flex:0 0 30%;">
+        <div style="margin-bottom:24px;">
+          <span class="label">Today</span>
+          <div style="font-size:50px; font-weight:700; line-height:1.05;">{{ current_temp }}{{ units }}</div>
+        </div>
+        <div style="margin-bottom:24px;">
+          <span class="label">{{ normal_window }} normal</span>
+          <div style="font-size:34px; font-weight:600; line-height:1.05;">{{ normal_temp }}{{ units }}</div>
+        </div>
+        <div>
+          <span class="label">Anomaly</span>
+          <div style="font-size:34px; font-weight:600; line-height:1.05;">{{ anomaly_str }}</div>
         </div>
       </div>
-      <div class="item">
-        <div class="meta"></div>
-        <div class="content">
-          <span class="label label--small">{{ normal_window }} normal</span>
-          <span class="value value--large value--tnums">{{ normal_temp }}{{ units }}</span>
-        </div>
-      </div>
-      <div class="item">
-        <div class="meta"></div>
-        <div class="content">
-          <span class="label label--small">Anomaly</span>
-          <span class="value value--large value--tnums">{{ anomaly_str }}</span>
-        </div>
-      </div>
+
+      <div style="flex:1 1 70%;">{{ svg_full }}</div>
+
     </div>
-
-    <div class="w-full">{{ svg_full }}</div>
-
   </div>
 
   <div class="title_bar">
