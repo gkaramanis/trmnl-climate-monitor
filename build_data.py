@@ -3,9 +3,9 @@
 Build data.json for the TRMNL Climate Monitor plugin.
 
 Fetches daily mean 2m temperature from the Open-Meteo Archive API (no key
-needed), computes a 1991-2020 climatology (mean, 10-90th percentile band, and
-record min/max range), then plots this year's daily temperatures against that
-band -- in the style of the Reuters / Climate Reanalyzer automated monitor.
+needed), computes a 1961-1990 climatology (mean, 10-90th percentile band, and
+min/max range), then plots this year's daily temperatures against that band
+-- in the style of the Reuters climate monitor.
 
 Everything (data + chart) is rendered here and written to data.json as
 pre-built SVG strings, so the TRMNL Liquid template only has to embed them.

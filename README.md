@@ -2,7 +2,7 @@
 
 A [TRMNL](https://usetrmnl.com) private plugin plotting this year's daily
 temperature against the 1961–1990 climate normal for any location, in the style
-of the [Reuters automated climate monitor](https://www.reuters.com/graphics/CLIMATE-AUTOMATED/MONITOR/akpeykqqapr/).
+of the [Reuters climate monitor](https://www.reuters.com/graphics/CLIMATE-AUTOMATED/MONITOR/akpeykqqapr/).
 
 ![preview](preview.png)
 
