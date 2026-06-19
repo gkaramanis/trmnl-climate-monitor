@@ -59,7 +59,7 @@ https://raw.githubusercontent.com/<user>/trmnl-climate-monitor/main/data.json
 
 ### 3. Create the TRMNL private plugin
 
-In the TRMNL web UI: **Plugins → Private Plugin → Create**.
+In the TRMNL web UI: **Plugins → Private Plugin → Add new**.
 
 - **Strategy:** Polling
 - **Polling URL:** the raw `data.json` URL above
