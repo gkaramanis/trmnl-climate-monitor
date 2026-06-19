@@ -1,7 +1,7 @@
 # TRMNL Climate Monitor
 
 A [TRMNL](https://usetrmnl.com) private plugin that plots this year's daily
-temperature against the 1991–2020 climate normal for any location — in the
+temperature against the 1961–1990 climate normal for any location — in the
 style of the [Reuters automated climate monitor](https://www.reuters.com/graphics/CLIMATE-AUTOMATED/MONITOR/akpeykqqapr/)
 / Climate Reanalyzer charts.
 

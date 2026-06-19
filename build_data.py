@@ -14,28 +14,28 @@ Configure via environment variables (see README) or the defaults below.
 Standard library only -- no pip install required.
 """
 
-import os
+import datetime as dt
 import json
 import math
-import datetime as dt
-from urllib.request import urlopen, Request
+import os
 from urllib.parse import urlencode
+from urllib.request import Request, urlopen
 
 # ---------------------------------------------------------------------------
 # Configuration  (override with env vars, e.g. LAT=51.50 LON=-0.12 ... )
 # ---------------------------------------------------------------------------
-LAT        = float(os.environ.get("LAT", "59.8586"))     # Uppsala by default
-LON        = float(os.environ.get("LON", "17.6389"))
-LOCATION   = os.environ.get("LOCATION", "Uppsala")
-UNITS      = os.environ.get("UNITS", "celsius")          # "celsius" or "fahrenheit"
-NORMAL_FROM = int(os.environ.get("NORMAL_FROM", "1991")) # climate-normal window
-NORMAL_TO   = int(os.environ.get("NORMAL_TO", "2020"))
-SMOOTH_DAYS = int(os.environ.get("SMOOTH_DAYS", "5"))    # +/- window for smoothing
-OUTFILE     = os.environ.get("OUTFILE", "data.json")
+LAT = float(os.environ.get("LAT", "59.8586"))  # Uppsala by default
+LON = float(os.environ.get("LON", "17.6389"))
+LOCATION = os.environ.get("LOCATION", "Uppsala")
+UNITS = os.environ.get("UNITS", "celsius")  # "celsius" or "fahrenheit"
+NORMAL_FROM = int(os.environ.get("NORMAL_FROM", "1961"))  # climate-normal window
+NORMAL_TO = int(os.environ.get("NORMAL_TO", "1990"))
+SMOOTH_DAYS = int(os.environ.get("SMOOTH_DAYS", "5"))  # +/- window for smoothing
+OUTFILE = os.environ.get("OUTFILE", "data.json")
 
 UNIT_SYMBOL = "°F" if UNITS.startswith("f") else "°C"
 
-ARCHIVE_URL  = "https://archive-api.open-meteo.com/v1/archive"
+ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive"
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 
 
@@ -51,18 +51,23 @@ def _get_json(url, params):
 
 def fetch_archive(start, end):
     """Daily mean temperature from ERA5 archive between two date strings."""
-    data = _get_json(ARCHIVE_URL, {
-        "latitude": LAT,
-        "longitude": LON,
-        "start_date": start,
-        "end_date": end,
-        "daily": "temperature_2m_mean",
-        "temperature_unit": UNITS,
-        "timezone": "auto",
-    })
+    data = _get_json(
+        ARCHIVE_URL,
+        {
+            "latitude": LAT,
+            "longitude": LON,
+            "start_date": start,
+            "end_date": end,
+            "daily": "temperature_2m_mean",
+            "temperature_unit": UNITS,
+            "timezone": "auto",
+        },
+    )
     daily = data.get("daily", {})
     out = {}
-    for date_str, temp in zip(daily.get("time", []), daily.get("temperature_2m_mean", [])):
+    for date_str, temp in zip(
+        daily.get("time", []), daily.get("temperature_2m_mean", [])
+    ):
         if temp is not None:
             out[date_str] = float(temp)
     return out
@@ -70,18 +75,23 @@ def fetch_archive(start, end):
 
 def fetch_recent():
     """Last ~10 days incl. today from the forecast endpoint (fills archive lag)."""
-    data = _get_json(FORECAST_URL, {
-        "latitude": LAT,
-        "longitude": LON,
-        "daily": "temperature_2m_mean",
-        "temperature_unit": UNITS,
-        "past_days": 10,
-        "forecast_days": 1,
-        "timezone": "auto",
-    })
+    data = _get_json(
+        FORECAST_URL,
+        {
+            "latitude": LAT,
+            "longitude": LON,
+            "daily": "temperature_2m_mean",
+            "temperature_unit": UNITS,
+            "past_days": 10,
+            "forecast_days": 1,
+            "timezone": "auto",
+        },
+    )
     daily = data.get("daily", {})
     out = {}
-    for date_str, temp in zip(daily.get("time", []), daily.get("temperature_2m_mean", [])):
+    for date_str, temp in zip(
+        daily.get("time", []), daily.get("temperature_2m_mean", [])
+    ):
         if temp is not None:
             out[date_str] = float(temp)
     return out
@@ -156,7 +166,7 @@ def build_climatology(archive):
 def current_year_series(archive, recent, year):
     """This year's daily temps keyed by day-of-year index (archive + forecast)."""
     series = {}
-    for src in (archive, recent):                 # recent overrides archive lag
+    for src in (archive, recent):  # recent overrides archive lag
         for date_str, temp in src.items():
             y, m, d = (int(x) for x in date_str.split("-"))
             if y == year:
@@ -213,9 +223,15 @@ def render_svg(clim, cur, year, W=560, H=440, base_fs=16):
 
     def line_path(arr_or_dict, keys=None):
         if keys is None:
-            seq = [(i, arr_or_dict[i]) for i in range(366) if arr_or_dict[i] is not None]
+            seq = [
+                (i, arr_or_dict[i]) for i in range(366) if arr_or_dict[i] is not None
+            ]
         else:
-            seq = [(i, arr_or_dict[i]) for i in sorted(keys) if arr_or_dict.get(i) is not None]
+            seq = [
+                (i, arr_or_dict[i])
+                for i in sorted(keys)
+                if arr_or_dict.get(i) is not None
+            ]
         if not seq:
             return ""
         return "M " + " L ".join(f"{X(i):.1f},{Y(v):.1f}" for i, v in seq)
@@ -238,22 +254,32 @@ def render_svg(clim, cur, year, W=560, H=440, base_fs=16):
     t = math.ceil(tmin / step) * step
     while t < tmax:
         y = Y(t)
-        parts.append(f'<line x1="{ml}" y1="{y:.1f}" x2="{W-mr}" y2="{y:.1f}" '
-                     f'stroke="#555" stroke-width="1" stroke-dasharray="1 5"/>')
-        parts.append(f'<text x="{ml-4}" y="{y+4:.1f}" text-anchor="end" '
-                     f'font-size="{fs}" fill="#555">{int(round(t))}{UNIT_SYMBOL}</text>')
+        parts.append(
+            f'<line x1="{ml}" y1="{y:.1f}" x2="{W - mr}" y2="{y:.1f}" '
+            f'stroke="#555" stroke-width="1" stroke-dasharray="1 5"/>'
+        )
+        parts.append(
+            f'<text x="{ml - 4}" y="{y + 4:.1f}" text-anchor="end" '
+            f'font-size="{fs}" fill="#555">{int(round(t))}{UNIT_SYMBOL}</text>'
+        )
         t += step
 
     # normal mean line (dashed) + this-year line (bold black)
-    parts.append(f'<path d="{line_path(clim["mean"])}" fill="none" stroke="#444" '
-                 f'stroke-width="1.3" stroke-dasharray="4 3"/>')
-    parts.append(f'<path d="{line_path(cur, keys=cur.keys())}" fill="none" '
-                 f'stroke="#000" stroke-width="2.6" stroke-linejoin="round"/>')
+    parts.append(
+        f'<path d="{line_path(clim["mean"])}" fill="none" stroke="#444" '
+        f'stroke-width="1.3" stroke-dasharray="4 3"/>'
+    )
+    parts.append(
+        f'<path d="{line_path(cur, keys=cur.keys())}" fill="none" '
+        f'stroke="#000" stroke-width="2.6" stroke-linejoin="round"/>'
+    )
 
     # month labels (no vertical gridlines)
     for m, start in enumerate(MONTH_STARTS):
-        parts.append(f'<text x="{X(start)+pw/24:.1f}" y="{H-6}" text-anchor="middle" '
-                     f'font-size="{fs}" fill="#555">{MONTHS[m]}</text>')
+        parts.append(
+            f'<text x="{X(start) + pw / 24:.1f}" y="{H - 6}" text-anchor="middle" '
+            f'font-size="{fs}" fill="#555">{MONTHS[m]}</text>'
+        )
 
     # today marker
     if cur:
@@ -263,8 +289,10 @@ def render_svg(clim, cur, year, W=560, H=440, base_fs=16):
         lbl = f"{cur[last]:.0f}{UNIT_SYMBOL}"
         anchor = "end" if cx > W * 0.75 else "start"
         dx = -8 if anchor == "end" else 8
-        parts.append(f'<text x="{cx+dx:.1f}" y="{cy-7:.1f}" text-anchor="{anchor}" '
-                     f'font-size="{fs+3}" font-weight="bold" fill="#000">{lbl}</text>')
+        parts.append(
+            f'<text x="{cx + dx:.1f}" y="{cy - 7:.1f}" text-anchor="{anchor}" '
+            f'font-size="{fs + 3}" font-weight="bold" fill="#000">{lbl}</text>'
+        )
 
     parts.append("</svg>")
     return "".join(parts)
@@ -290,7 +318,9 @@ def main():
     if cur_temp is None and cur:
         cur_temp = cur[max(cur.keys())]
     normal = clim["mean"][today_doy]
-    anomaly = (cur_temp - normal) if (cur_temp is not None and normal is not None) else None
+    anomaly = (
+        (cur_temp - normal) if (cur_temp is not None and normal is not None) else None
+    )
 
     payload = {
         "location": LOCATION,
@@ -300,8 +330,12 @@ def main():
         "current_temp": round(cur_temp, 1) if cur_temp is not None else None,
         "normal_temp": round(normal, 1) if normal is not None else None,
         "anomaly": round(anomaly, 1) if anomaly is not None else None,
-        "anomaly_str": (f"+{anomaly:.1f}" if anomaly and anomaly >= 0
-                        else (f"{anomaly:.1f}" if anomaly is not None else "n/a")) + UNIT_SYMBOL,
+        "anomaly_str": (
+            f"+{anomaly:.1f}"
+            if anomaly and anomaly >= 0
+            else (f"{anomaly:.1f}" if anomaly is not None else "n/a")
+        )
+        + UNIT_SYMBOL,
         "normal_window": f"{NORMAL_FROM}–{NORMAL_TO}",
         # full view: taller aspect ratio fills the chart column; compact is
         # wider/shorter for the half + quadrant layouts.
@@ -311,9 +345,13 @@ def main():
 
     with open(OUTFILE, "w") as f:
         json.dump(payload, f, separators=(",", ":"))
-    print(f"Wrote {OUTFILE}: {LOCATION} today {payload['current_temp']}{UNIT_SYMBOL} "
-          f"(normal {payload['normal_temp']}{UNIT_SYMBOL}, anomaly {payload['anomaly_str']})")
-    print(f"SVG sizes: full {len(payload['svg_full'])}B, compact {len(payload['svg_compact'])}B")
+    print(
+        f"Wrote {OUTFILE}: {LOCATION} today {payload['current_temp']}{UNIT_SYMBOL} "
+        f"(normal {payload['normal_temp']}{UNIT_SYMBOL}, anomaly {payload['anomaly_str']})"
+    )
+    print(
+        f"SVG sizes: full {len(payload['svg_full'])}B, compact {len(payload['svg_compact'])}B"
+    )
 
 
 if __name__ == "__main__":

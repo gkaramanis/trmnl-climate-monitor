@@ -1,25 +1,26 @@
 <div class="view view--full">
-  <div class="layout" style="height:100%;">
-    <div class="flex gap--large" style="align-items:stretch; height:100%;">
+  <div style="display:flex; flex:1 1 auto; align-self:stretch; align-items:stretch;
+              width:100%; height:100%; box-sizing:border-box; gap:32px; padding:8px 10px;">
 
-      <div style="flex:0 0 30%; display:flex; flex-direction:column; justify-content:space-evenly;">
+      <div style="flex:0 0 30%; min-width:0; display:flex; flex-direction:column; justify-content:space-evenly;">
         <div>
           <span class="label">Today</span>
-          <div style="font-size:64px; font-weight:700; line-height:1;">{{ current_temp }}{{ units }}</div>
+          <div style="font-size:48px; font-weight:700; line-height:1;">{{ current_temp }}{{ units }}</div>
         </div>
         <div>
-          <span class="label">{{ normal_window }} normal</span>
-          <div style="font-size:40px; font-weight:600; line-height:1;">{{ normal_temp }}{{ units }}</div>
+          <span class="label">{{ normal_window }}</span>
+          <div style="font-size:32px; font-weight:600; line-height:1;">{{ normal_temp }}{{ units }}</div>
         </div>
         <div>
           <span class="label">Anomaly</span>
-          <div style="font-size:40px; font-weight:600; line-height:1;">{{ anomaly_str }}</div>
+          <div style="font-size:32px; font-weight:600; line-height:1;">{{ anomaly_str }}</div>
         </div>
       </div>
 
-      <div style="flex:1 1 70%; display:flex; align-items:center;">{{ svg_full }}</div>
+      <div style="flex:1 1 0%; min-width:0; display:flex; align-items:center;">
+        <div style="width:100%;">{{ svg_full }}</div>
+      </div>
 
-    </div>
   </div>
 
   <div class="title_bar">

@@ -27,8 +27,8 @@ jobs:
           LON: "17.6389"
           LOCATION: "Uppsala"
           UNITS: "celsius"        # or "fahrenheit"
-          NORMAL_FROM: "1991"
-          NORMAL_TO: "2020"
+          NORMAL_FROM: "1961"
+          NORMAL_TO: "1990"
         run: python build_data.py
 
       - name: Commit if changed
