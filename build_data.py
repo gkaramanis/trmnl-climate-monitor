@@ -227,21 +227,23 @@ def render_svg(clim, cur, year, compact=False):
         f'shape-rendering="geometricPrecision">'
     ]
 
-    # y gridlines + labels
-    step = nice_step(tmax - tmin)
-    t = math.ceil(tmin / step) * step
     fs = 11 if compact else 12
-    while t < tmax:
-        y = Y(t)
-        parts.append(f'<line x1="{ml}" y1="{y:.1f}" x2="{W-mr}" y2="{y:.1f}" '
-                     f'stroke="#e6e6e6" stroke-width="1"/>')
-        parts.append(f'<text x="{ml-4}" y="{y+4:.1f}" text-anchor="end" '
-                     f'font-size="{fs}" fill="#555">{int(round(t))}{UNIT_SYMBOL}</text>')
-        t += step
 
     # record range + inner percentile band (light to medium grey)
     parts.append(f'<path d="{band_path(clim["lo"], clim["hi"])}" fill="#e3e3e3"/>')
     parts.append(f'<path d="{band_path(clim["p10"], clim["p90"])}" fill="#bcbcbc"/>')
+
+    # horizontal (y-axis) gridlines + labels, drawn over the bands as dotted
+    # mid-grey so they survive the 1-bit e-ink dithering (light greys vanish)
+    step = nice_step(tmax - tmin)
+    t = math.ceil(tmin / step) * step
+    while t < tmax:
+        y = Y(t)
+        parts.append(f'<line x1="{ml}" y1="{y:.1f}" x2="{W-mr}" y2="{y:.1f}" '
+                     f'stroke="#555" stroke-width="1" stroke-dasharray="1 5"/>')
+        parts.append(f'<text x="{ml-4}" y="{y+4:.1f}" text-anchor="end" '
+                     f'font-size="{fs}" fill="#555">{int(round(t))}{UNIT_SYMBOL}</text>')
+        t += step
 
     # normal mean line (dashed) + this-year line (bold black)
     parts.append(f'<path d="{line_path(clim["mean"])}" fill="none" stroke="#444" '
