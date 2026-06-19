@@ -1,8 +1,9 @@
 # TRMNL Climate Monitor
 
-A [TRMNL](https://usetrmnl.com) private plugin plotting this year's daily
-temperature against the 1961–1990 climate normal for any location, in the style
-of the [Reuters climate monitor](https://www.reuters.com/graphics/CLIMATE-AUTOMATED/MONITOR/akpeykqqapr/).
+A [TRMNL](https://usetrmnl.com) private plugin plotting this year's daily **mean**
+temperature (local calendar day) against the 1961–1990 climate normal for any
+location, in the style of the [Reuters climate monitor](https://www.reuters.com/graphics/CLIMATE-AUTOMATED/MONITOR/akpeykqqapr/)
+(which instead shows the daily high).
 
 ![preview](preview.png)
 
