@@ -1,23 +1,23 @@
 <div class="view view--full">
-  <div class="layout">
-    <div class="flex gap--large" style="align-items:center; height:100%;">
+  <div class="layout" style="height:100%;">
+    <div class="flex gap--large" style="align-items:stretch; height:100%;">
 
-      <div style="flex:0 0 30%;">
-        <div style="margin-bottom:24px;">
+      <div style="flex:0 0 30%; display:flex; flex-direction:column; justify-content:space-evenly;">
+        <div>
           <span class="label">Today</span>
-          <div style="font-size:50px; font-weight:700; line-height:1.05;">{{ current_temp }}{{ units }}</div>
+          <div style="font-size:64px; font-weight:700; line-height:1;">{{ current_temp }}{{ units }}</div>
         </div>
-        <div style="margin-bottom:24px;">
+        <div>
           <span class="label">{{ normal_window }} normal</span>
-          <div style="font-size:34px; font-weight:600; line-height:1.05;">{{ normal_temp }}{{ units }}</div>
+          <div style="font-size:40px; font-weight:600; line-height:1;">{{ normal_temp }}{{ units }}</div>
         </div>
         <div>
           <span class="label">Anomaly</span>
-          <div style="font-size:34px; font-weight:600; line-height:1.05;">{{ anomaly_str }}</div>
+          <div style="font-size:40px; font-weight:600; line-height:1;">{{ anomaly_str }}</div>
         </div>
       </div>
 
-      <div style="flex:1 1 70%;">{{ svg_full }}</div>
+      <div style="flex:1 1 70%; display:flex; align-items:center;">{{ svg_full }}</div>
 
     </div>
   </div>

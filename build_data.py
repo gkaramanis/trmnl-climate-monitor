@@ -179,12 +179,11 @@ def nice_step(span):
     return 100
 
 
-def render_svg(clim, cur, year, compact=False):
-    W, H = 780, (300 if compact else 430)
-    ml = 40 if compact else 46
-    mr = 10
-    mt = 8
-    mb = 22
+def render_svg(clim, cur, year, W=560, H=440, base_fs=16):
+    ml = base_fs * 3
+    mr = base_fs
+    mt = base_fs
+    mb = base_fs * 2
     pw = W - ml - mr
     ph = H - mt - mb
 
@@ -227,7 +226,7 @@ def render_svg(clim, cur, year, compact=False):
         f'shape-rendering="geometricPrecision">'
     ]
 
-    fs = 11 if compact else 12
+    fs = base_fs
 
     # record range + inner percentile band (light to medium grey)
     parts.append(f'<path d="{band_path(clim["lo"], clim["hi"])}" fill="#e3e3e3"/>')
@@ -304,8 +303,10 @@ def main():
         "anomaly_str": (f"+{anomaly:.1f}" if anomaly and anomaly >= 0
                         else (f"{anomaly:.1f}" if anomaly is not None else "n/a")) + UNIT_SYMBOL,
         "normal_window": f"{NORMAL_FROM}–{NORMAL_TO}",
-        "svg_full": render_svg(clim, cur, year, compact=False),
-        "svg_compact": render_svg(clim, cur, year, compact=True),
+        # full view: taller aspect ratio fills the chart column; compact is
+        # wider/shorter for the half + quadrant layouts.
+        "svg_full": render_svg(clim, cur, year, W=560, H=450, base_fs=17),
+        "svg_compact": render_svg(clim, cur, year, W=780, H=300, base_fs=13),
     }
 
     with open(OUTFILE, "w") as f:
