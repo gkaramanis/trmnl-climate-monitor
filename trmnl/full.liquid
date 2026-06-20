@@ -4,20 +4,16 @@
 
       <div style="flex:0 0 30%; min-width:0; display:flex; flex-direction:column; justify-content:space-evenly;">
         <div>
-          <span class="label">Today</span>
-          <div style="font-size:48px; font-weight:700; line-height:1;">{{ current_temp }}{{ units }}</div>
+          <span class="label">Today's high</span>
+          <div style="font-size:48px; font-weight:700; line-height:1;">{{ high_predicted }}{{ units }}</div>
         </div>
         <div>
-          <span class="label">{{ normal_window }}</span>
-          <div style="font-size:32px; font-weight:600; line-height:1;">{{ normal_temp }}{{ units }}</div>
+          <span class="label">{{ normal_window }} avg high</span>
+          <div style="font-size:32px; font-weight:600; line-height:1;">{{ high_normal }}{{ units }}</div>
         </div>
         <div>
           <span class="label">Anomaly</span>
-          <div style="font-size:32px; font-weight:600; line-height:1;">{{ anomaly_str }}</div>
-        </div>
-        <div>
-          <span class="label">High · today vs {{ normal_window }} avg</span>
-          <div style="font-size:32px; font-weight:600; line-height:1;">{{ high_predicted }} / {{ high_normal }}{{ units }}</div>
+          <div style="font-size:32px; font-weight:600; line-height:1;">{{ high_anomaly_str }}</div>
         </div>
       </div>
 
