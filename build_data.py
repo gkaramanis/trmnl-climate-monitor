@@ -2,10 +2,11 @@
 """
 Build data.json for the TRMNL Climate Monitor plugin.
 
-Fetches daily mean 2m temperature from the Open-Meteo Archive API (no key
-needed), computes a 1961-1990 climatology (mean, 10-90th percentile band, and
-min/max range), then plots this year's daily temperatures against that band
--- in the style of the Reuters climate monitor.
+Fetches daily mean and max 2m temperature from the Open-Meteo Archive API (no
+key needed), computes a 1961-1990 climatology (mean, 10-90th percentile band,
+and min/max range), then plots this year's daily mean temperatures against that
+band -- in the style of the Reuters climate monitor. Headline numbers also
+surface today's predicted high vs the 1961-1990 average high for the same date.
 
 Everything (data + chart) is rendered here and written to data.json as
 pre-built SVG strings, so the TRMNL Liquid template only has to embed them.
@@ -49,8 +50,23 @@ def _get_json(url, params):
         return json.load(resp)
 
 
+def _split_daily(daily):
+    """Pull mean + max temperature arrays into two {date: value} dicts."""
+    mean_out, max_out = {}, {}
+    for date_str, mean_t, max_t in zip(
+        daily.get("time", []),
+        daily.get("temperature_2m_mean", []),
+        daily.get("temperature_2m_max", []),
+    ):
+        if mean_t is not None:
+            mean_out[date_str] = float(mean_t)
+        if max_t is not None:
+            max_out[date_str] = float(max_t)
+    return mean_out, max_out
+
+
 def fetch_archive(start, end):
-    """Daily mean temperature from ERA5 archive between two date strings."""
+    """Daily mean and max temperature from ERA5 archive between two dates."""
     data = _get_json(
         ARCHIVE_URL,
         {
@@ -58,43 +74,32 @@ def fetch_archive(start, end):
             "longitude": LON,
             "start_date": start,
             "end_date": end,
-            "daily": "temperature_2m_mean",
+            "daily": "temperature_2m_mean,temperature_2m_max",
             "temperature_unit": UNITS,
             "timezone": "auto",
         },
     )
-    daily = data.get("daily", {})
-    out = {}
-    for date_str, temp in zip(
-        daily.get("time", []), daily.get("temperature_2m_mean", [])
-    ):
-        if temp is not None:
-            out[date_str] = float(temp)
-    return out
+    return _split_daily(data.get("daily", {}))
 
 
 def fetch_recent():
-    """Last ~10 days incl. today from the forecast endpoint (fills archive lag)."""
+    """Last ~10 days incl. today from the forecast endpoint (fills archive lag).
+
+    Today's row is a forecast, so its max doubles as the predicted high.
+    """
     data = _get_json(
         FORECAST_URL,
         {
             "latitude": LAT,
             "longitude": LON,
-            "daily": "temperature_2m_mean",
+            "daily": "temperature_2m_mean,temperature_2m_max",
             "temperature_unit": UNITS,
             "past_days": 10,
             "forecast_days": 1,
             "timezone": "auto",
         },
     )
-    daily = data.get("daily", {})
-    out = {}
-    for date_str, temp in zip(
-        daily.get("time", []), daily.get("temperature_2m_mean", [])
-    ):
-        if temp is not None:
-            out[date_str] = float(temp)
-    return out
+    return _split_daily(data.get("daily", {}))
 
 
 # ---------------------------------------------------------------------------
@@ -244,9 +249,11 @@ def render_svg(clim, cur, year, W=560, H=440, base_fs=16):
 
     fs = base_fs
 
-    # record range + inner percentile band (light to medium grey)
-    parts.append(f'<path d="{band_path(clim["lo"], clim["hi"])}" fill="#e3e3e3"/>')
-    parts.append(f'<path d="{band_path(clim["p10"], clim["p90"])}" fill="#bcbcbc"/>')
+    # record range + inner percentile band. Fills are snapped to the device's
+    # 2-bit palette steps (#aaa light grey, #555 dark grey) so they stay
+    # distinct after quantization; arbitrary light greys collapse to white/one.
+    parts.append(f'<path d="{band_path(clim["lo"], clim["hi"])}" fill="#aaaaaa"/>')
+    parts.append(f'<path d="{band_path(clim["p10"], clim["p90"])}" fill="#555555"/>')
 
     # horizontal (y-axis) gridlines + labels, drawn over the bands as dotted
     # mid-grey so they survive the 1-bit e-ink dithering (light greys vanish)
@@ -264,10 +271,11 @@ def render_svg(clim, cur, year, W=560, H=440, base_fs=16):
         )
         t += step
 
-    # normal mean line (dashed) + this-year line (bold black)
+    # normal mean line (dashed, white so it reads on the dark inner band) +
+    # this-year line (bold black)
     parts.append(
-        f'<path d="{line_path(clim["mean"])}" fill="none" stroke="#444" '
-        f'stroke-width="1.3" stroke-dasharray="4 3"/>'
+        f'<path d="{line_path(clim["mean"])}" fill="none" stroke="#fff" '
+        f'stroke-width="1.5" stroke-dasharray="4 3"/>'
     )
     parts.append(
         f'<path d="{line_path(cur, keys=cur.keys())}" fill="none" '
@@ -306,11 +314,12 @@ def main():
     year = today.year
 
     print(f"Fetching archive {NORMAL_FROM}-01-01 .. {today} for {LOCATION} ...")
-    archive = fetch_archive(f"{NORMAL_FROM}-01-01", today.isoformat())
-    recent = fetch_recent()
+    archive_mean, archive_max = fetch_archive(f"{NORMAL_FROM}-01-01", today.isoformat())
+    recent_mean, recent_max = fetch_recent()
 
-    clim = build_climatology(archive)
-    cur = current_year_series(archive, recent, year)
+    clim = build_climatology(archive_mean)
+    clim_high = build_climatology(archive_max)  # daily-high climatology
+    cur = current_year_series(archive_mean, recent_mean, year)
 
     # headline numbers for the title bar
     today_doy = doy_index(today.month, today.day)
@@ -321,6 +330,10 @@ def main():
     anomaly = (
         (cur_temp - normal) if (cur_temp is not None and normal is not None) else None
     )
+
+    # highs: today's predicted high vs the mean high for the same date (normal window)
+    high_predicted = recent_max.get(today.isoformat())
+    high_normal = clim_high["mean"][today_doy]
 
     payload = {
         "location": LOCATION,
@@ -336,6 +349,8 @@ def main():
             else (f"{anomaly:.1f}" if anomaly is not None else "n/a")
         )
         + UNIT_SYMBOL,
+        "high_predicted": round(high_predicted, 1) if high_predicted is not None else None,
+        "high_normal": round(high_normal, 1) if high_normal is not None else None,
         "normal_window": f"{NORMAL_FROM}–{NORMAL_TO}",
         # full view: taller aspect ratio fills the chart column; compact is
         # wider/shorter for the half + quadrant layouts.
@@ -347,7 +362,9 @@ def main():
         json.dump(payload, f, separators=(",", ":"))
     print(
         f"Wrote {OUTFILE}: {LOCATION} today {payload['current_temp']}{UNIT_SYMBOL} "
-        f"(normal {payload['normal_temp']}{UNIT_SYMBOL}, anomaly {payload['anomaly_str']})"
+        f"(normal {payload['normal_temp']}{UNIT_SYMBOL}, anomaly {payload['anomaly_str']}); "
+        f"high {payload['high_predicted']}{UNIT_SYMBOL} vs normal "
+        f"{payload['high_normal']}{UNIT_SYMBOL}"
     )
     print(
         f"SVG sizes: full {len(payload['svg_full'])}B, compact {len(payload['svg_compact'])}B"

@@ -9,15 +9,19 @@ location, in the style of the [Reuters climate monitor](https://www.reuters.com/
 
 - **Light grey band** — daily range (min–max over 1961–1990)
 - **Dark grey band** — 10th–90th percentile
-- **Dashed line** — daily mean (the normal)
+- **Dashed white line** — daily mean (the normal)
 - **Bold black line** — this year so far, today's value marked
+
+The headline column also shows today's **predicted high** against the 1961–1990
+**average high for the same date** (the chart itself stays daily-mean).
 
 ## How it works
 
-1. `build_data.py` pulls daily mean 2 m temperature from the free
+1. `build_data.py` pulls daily mean and max 2 m temperature from the free
    [Open-Meteo](https://open-meteo.com) APIs (no key): the Archive API for the
-   history and current year, the Forecast API for the last few days. It computes
-   the climatology, renders the chart to SVG, and writes `data.json`.
+   history and current year, the Forecast API for the last few days (today's
+   forecast max is the predicted high). It computes the climatology, renders the
+   chart to SVG, and writes `data.json`.
 2. A daily GitHub Action runs the script and commits `data.json` when it changes.
 3. TRMNL polls the raw `data.json` URL; `full.liquid` embeds the SVG.
 
@@ -70,7 +74,9 @@ Save and add it to a playlist.
 | field | meaning |
 |-------|---------|
 | `location`, `units`, `year`, `updated` | labels |
-| `current_temp`, `normal_temp`, `anomaly`, `anomaly_str` | today vs normal |
+| `current_temp`, `normal_temp`, `anomaly`, `anomaly_str` | today's mean vs normal |
+| `high_predicted` | today's predicted daily high |
+| `high_normal` | mean daily high for this date over the normal window |
 | `normal_window` | e.g. `1961–1990` |
 | `svg_full` | chart embedded by `full.liquid` |
 | `svg_compact` | wider/shorter chart variant |
