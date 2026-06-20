@@ -4,7 +4,7 @@ A [TRMNL](https://usetrmnl.com) private plugin plotting this year's daily **high
 temperature (local calendar day) against the 1961–1990 climate normal for any
 location, in the style of the [Reuters climate monitor](https://www.reuters.com/graphics/CLIMATE-AUTOMATED/MONITOR/akpeykqqapr/).
 
-![preview](preview.png?v=2)
+![preview](preview.png)
 
 - **Sparse stipple band** — daily-high range (min–max over 1961–1990)
 - **Denser stipple band** — 10th–90th percentile of the daily high
