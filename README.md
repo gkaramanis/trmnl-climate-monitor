@@ -25,7 +25,7 @@ high for the same date**, and the anomaly between them.
    history and current year, the Forecast API for the last few days (today's
    forecast high is the predicted high). It computes the climatology, renders the
    chart to SVG, and writes `data.json`.
-2. A daily GitHub Action runs the script and commits `data.json` when it changes.
+2. A GitHub Action runs the script every 6h and commits `data.json` when it changes.
 3. TRMNL polls the raw `data.json` URL; `full.liquid` embeds the SVG.
 
 ## Setup
@@ -55,7 +55,8 @@ gh repo create trmnl-climate-monitor --public --source=. --push
 
 The repo must be public so TRMNL can poll the raw file. Run the workflow once
 (**Actions → Update climate data → Run workflow**) to generate `data.json`; it
-then runs daily at 05:20 UTC. Polling URL:
+then runs every 6h (02:20/08:20/14:20/20:20 UTC, though GitHub queues scheduled
+runs and typically fires them 2–3h late). Polling URL:
 
 ```
 https://raw.githubusercontent.com/<user>/trmnl-climate-monitor/main/data.json

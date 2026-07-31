@@ -324,12 +324,19 @@ def render_svg(clim, cur, year, W=560, H=440, base_fs=16):
 # Main
 # ---------------------------------------------------------------------------
 def main():
-    today = dt.date.today()
+    # The runner's clock is UTC, but Open-Meteo (timezone=auto) keys its rows by
+    # the location's local date. Runs near a UTC/local date boundary would then
+    # pick the wrong row for "today" -- headline showing yesterday's high while
+    # the chart marker sits on today's. So take "today" from the forecast
+    # response itself: with forecast_days=1 its last row is the local today.
+    recent = fetch_recent()
+    if not recent:
+        raise SystemExit("Forecast endpoint returned no daily rows")
+    today = dt.date.fromisoformat(max(recent))
     year = today.year
 
     print(f"Fetching archive {NORMAL_FROM}-01-01 .. {today} for {LOCATION} ...")
     archive = fetch_archive(f"{NORMAL_FROM}-01-01", today.isoformat())
-    recent = fetch_recent()
 
     clim = build_climatology(archive)  # climatology of the daily high
     cur = current_year_series(archive, recent, year)
