@@ -1,26 +1,25 @@
 <div class="view view--full">
-  <div style="display:flex; flex:1 1 auto; align-self:stretch; align-items:stretch;
-              width:100%; height:100%; box-sizing:border-box; gap:32px; padding:8px 10px;">
+  <div class="layout">
+    <div class="grid grid--cols-3">
 
-      <div style="flex:0 0 30%; min-width:0; display:flex; flex-direction:column; justify-content:space-evenly;">
-        <div>
+      <div class="col--span-1 flex flex--col flex--evenly">
+        <div class="flex flex--col">
           <span class="label">Today's high</span>
-          <div style="font-size:48px; font-weight:700; line-height:1;">{{ high_predicted }}{{ units }}</div>
+          <span class="value value--base">{{ high_predicted }}{{ units }}</span>
         </div>
-        <div>
+        <div class="flex flex--col">
           <span class="label">{{ normal_window }} avg high</span>
-          <div style="font-size:32px; font-weight:600; line-height:1;">{{ high_normal }}{{ units }}</div>
+          <span class="value value--small">{{ high_normal }}{{ units }}</span>
         </div>
-        <div>
+        <div class="flex flex--col">
           <span class="label">Anomaly</span>
-          <div style="font-size:32px; font-weight:600; line-height:1;">{{ high_anomaly_str }}</div>
+          <span class="value value--small">{{ high_anomaly_str }}</span>
         </div>
       </div>
 
-      <div style="flex:1 1 0%; min-width:0; display:flex; align-items:center;">
-        <div style="width:100%;">{{ svg_full }}</div>
-      </div>
+      <div class="col--span-2">{{ svg_full }}</div>
 
+    </div>
   </div>
 
   <div class="title_bar">
