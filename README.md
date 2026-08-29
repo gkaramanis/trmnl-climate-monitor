@@ -69,9 +69,35 @@ https://raw.githubusercontent.com/<user>/trmnl-climate-monitor/main/data.json
 - **Strategy:** Polling
 - **Polling URL:** the raw `data.json` URL
 - **Refresh:** 12–24 h
-- **Markup:** paste [`trmnl/full.liquid`](trmnl/full.liquid) into the Full tab
+- **Markup:** paste [`src/full.liquid`](src/full.liquid) into the Full tab
 
 Save and add it to a playlist.
+
+## Developing the markup
+
+Optional. The repo doubles as a [`trmnlp`](https://github.com/usetrmnl/trmnlp)
+project, so the markup can be previewed locally instead of pasted into the web
+editor:
+
+```bash
+gem install trmnl_preview
+trmnlp serve          # http://localhost:4567, live-reloads on save
+```
+
+`serve` fetches the polling URL in `src/settings.yml` and renders `full.liquid`
+through the TRMNL design system. `trmnlp build --png` writes real 2-bit PNGs
+instead (needs Firefox and ImageMagick).
+
+To push markup back to your own plugin, first `trmnlp login`, then change two
+values in `src/settings.yml` — they point at the author's plugin, not yours:
+
+| key | change to |
+|-----|-----------|
+| `id` | your private plugin's ID (in its URL on usetrmnl.com) |
+| `polling_url` | your fork's raw `data.json` URL |
+
+Then `trmnlp push`. Note `trmnlp pull` overwrites everything in `src/` with the
+server's copy, so commit before pulling.
 
 ## JSON fields
 
