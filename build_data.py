@@ -19,6 +19,8 @@ import datetime as dt
 import json
 import math
 import os
+import time
+from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
@@ -43,11 +45,30 @@ FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 # ---------------------------------------------------------------------------
 # Data fetch
 # ---------------------------------------------------------------------------
-def _get_json(url, params):
+def _get_json(url, params, attempts=4):
+    """GET and parse JSON, retrying transient failures with a backoff.
+
+    A single read timeout used to cost a whole scheduled run. 4xx responses are
+    our own bad request, so those are raised immediately rather than retried.
+    """
     full = url + "?" + urlencode(params)
     req = Request(full, headers={"User-Agent": "trmnl-climate-monitor/1.0"})
-    with urlopen(req, timeout=60) as resp:
-        return json.load(resp)
+    for attempt in range(1, attempts + 1):
+        try:
+            with urlopen(req, timeout=60) as resp:
+                return json.load(resp)
+        except HTTPError as exc:
+            if exc.code < 500:
+                raise
+            err = exc
+        except (OSError, ValueError) as exc:  # timeouts, resets, truncated JSON
+            err = exc
+        if attempt == attempts:
+            raise err
+        delay = 2 ** attempt
+        print(f"  {type(err).__name__}: {err} -- retrying in {delay}s "
+              f"({attempt}/{attempts - 1})")
+        time.sleep(delay)
 
 
 def _daily_max(daily):
@@ -335,8 +356,18 @@ def main():
     today = dt.date.fromisoformat(max(recent))
     year = today.year
 
-    print(f"Fetching archive {NORMAL_FROM}-01-01 .. {today} for {LOCATION} ...")
-    archive = fetch_archive(f"{NORMAL_FROM}-01-01", today.isoformat())
+    # The archive's allowed range ends at the current UTC date. Between 22:00
+    # UTC and midnight the local date is already tomorrow in UTC terms, and the
+    # request 400s. The archive lags several days anyway and fetch_recent()
+    # fills the tail, so clamping the end date costs nothing.
+    archive_end = min(today, dt.datetime.now(dt.timezone.utc).date())
+
+    # Only two slices are ever used: the normal window feeds the climatology,
+    # this year feeds the plotted line. Asking for one continuous range would
+    # also download every year in between just to discard it.
+    print(f"Fetching archive {NORMAL_FROM}-{NORMAL_TO} and {year} for {LOCATION} ...")
+    archive = fetch_archive(f"{NORMAL_FROM}-01-01", f"{NORMAL_TO}-12-31")
+    archive.update(fetch_archive(f"{year}-01-01", archive_end.isoformat()))
 
     clim = build_climatology(archive)  # climatology of the daily high
     cur = current_year_series(archive, recent, year)
